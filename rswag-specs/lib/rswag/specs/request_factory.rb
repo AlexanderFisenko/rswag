@@ -125,14 +125,9 @@ module Rswag
 
         # OAS 3: https://swagger.io/docs/specification/serialization/
         if swagger_doc && doc_version(swagger_doc).start_with?('3') && param[:schema]
-          # a workaround until 'rswag-specs' authors will fix the ability to define array as a query param
-          schema_type = param[:schema][:type].to_sym
+          return value.is_a?(Array) ? value.map { |element| "#{name}=#{element}" }.join('&') : "#{name}=#{value}" unless param[:schema][:type].to_sym == :object
+
           style = param[:style]&.to_sym || :form
-
-          return { name => value }.to_query if schema_type == :array && style == :deepObject
-
-          return "#{name}=#{value}" unless param[:schema][:type].to_sym == :object
-
           explode = param[:explode].nil? ? true : param[:explode]
 
           case style
